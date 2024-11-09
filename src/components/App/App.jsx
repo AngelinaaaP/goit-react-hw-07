@@ -1,102 +1,36 @@
 import css from './App.module.css';
-import fetchImg from '../../api';
-import { useState, useEffect } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
-import SearchBar from '../SearchBar/SearchBar';
-import ImageGallery from '../ImageGallery/ImageGallery';
-import Loader from '../Loader/Loader';
-import ErrorMessage from '../ErrorMessage/ErrorMessage';
-import LoadMoreBtn from '../LoadMoreBtn/LoadMoreBtn';
-import ImageModal from '../ImageModal/ImageModal';
+import './App.module.css';
+import { Toaster } from 'react-hot-toast';
+import { Route, Routes } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import Navigation from '../Navigation/Navigation';
+import NotFoundPage from '../../pages/NotFoundPage/NotFoundPage';
+
+const MoviesPage = lazy(() => import('../../pages/MoviesPage/MoviesPage'));
+const HomePage = lazy(() => import('../..//pages/HomePage/HomePage'));
+const MovieDetailsPage = lazy(() =>
+  import('../../pages/MovieDetailsPage/MovieDetailsPage')
+);
+const MovieCast = lazy(() => import('../MovieCast/MovieCast'));
+const MovieReviews = lazy(() => import('../MovieReviews/MovieReviews'));
 
 const App = () => {
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [page, setPage] = useState(1);
-  const [value, setValue] = useState('');
-  const [lastPage, setLastPage] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [modalImg, setModalImg] = useState('');
-  const [modalDesc, setModalDesc] = useState('');
-  const [modalAlt, setModalAlt] = useState('');
-  const [modalUser, setModalUser] = useState('');
-  const [modalLikes, setModalLikes] = useState('');
-
-  useEffect(() => {
-    const fetchPhotosHandler = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchImg(value, page);
-        const results = data.results;
-        setLastPage(page >= data.total_pages);
-        setImages(prevData => [...prevData, ...results]);
-      } catch (error) {
-        setError(true);
-        setErrorMessage(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (value) {
-      fetchPhotosHandler();
-    }
-  }, [value, page]);
-
-  useEffect(() => {
-    if (lastPage) {
-      toast.success('There is all what we find!', {
-        position: 'top-center',
-        duration: 3000,
-      });
-    }
-  });
-
-  const reachPage = () => {
-    setPage(prevData => prevData + 1);
-  };
-
-  const resetSubmit = () => {
-    setPage(1);
-    setValue('');
-    setImages([]);
-  };
-
-  const openModal = (imgUrl, desc, altDesc, user, likes) => {
-    setModalIsOpen(true);
-    setModalImg(imgUrl);
-    setModalDesc(desc);
-    setModalAlt(altDesc);
-    setModalUser(user);
-    setModalLikes(likes);
-  };
-
-  const closeModal = () => {
-    setModalIsOpen(false);
-  };
-
   return (
     <div className={css.container}>
-      <Toaster />
-      <SearchBar setValue={setValue} resetSubmit={resetSubmit} />
-      {loading && <Loader />}
-      {error && <ErrorMessage errorMessage={errorMessage} />}
-      {images.length > 0 && (
-        <>
-          <ImageGallery images={images} openModal={openModal} />
-          {!lastPage && <LoadMoreBtn reachPage={reachPage} />}
-        </>
-      )}
-      <ImageModal
-        modalIsOpen={modalIsOpen}
-        closeModal={closeModal}
-        modalImg={modalImg}
-        modalDesc={modalDesc}
-        modalAlt={modalAlt}
-        modalUser={modalUser}
-        modalLikes={modalLikes}
-      />
+      <h1 className={css.title}>Movie Search WebAPP</h1>
+      <Navigation />
+      <Suspense fallback={<div>Loading page...</div>}>
+        <Toaster />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="movies" element={<MoviesPage />} />
+          <Route path="/movies/:movieId" element={<MovieDetailsPage />}>
+            <Route path="cast" element={<MovieCast />} />
+            <Route path="reviews" element={<MovieReviews />} />
+          </Route>
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 };
