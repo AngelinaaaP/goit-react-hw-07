@@ -16,7 +16,6 @@
   display: flex;
   margin: 0 auto;
   flex-direction: column;
-  gap: 100px;
 }
 a {
   font-weight: 500;
@@ -49,7 +48,6 @@ ul,
 ol {
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 
 img {
@@ -59,7 +57,7 @@ img {
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: none;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
@@ -73,7 +71,7 @@ button:hover {
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: none;
 }
 
 @media (prefers-color-scheme: light) {

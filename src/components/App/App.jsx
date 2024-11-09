@@ -1,24 +1,55 @@
 import './App.module.css';
-import userData from '../../userData.json';
-import friends from '../../friends.json';
-import transactions from '../../transactions.json';
-import Profile from '../Profile/Profile';
-import FriendList from '../FriendList/FriendList';
-import TransactionHistory from '../TransactionHistory/TransactionHistory';
+import { useEffect, useState } from 'react';
+import Description from '../Description/Description';
+import Option from '../Options/Options';
+import Feedback from '../Feedback/Feedback';
+import Notification from '../Notification/Notification';
+
+const initialState = { good: 0, neutral: 0, bad: 0 };
 
 const App = () => {
+  const [feedbacks, setFeedbacks] = useState(() => {
+    const storageFeedback = localStorage.getItem('feedbackValue');
+    if (storageFeedback !== null) {
+      return JSON.parse(storageFeedback);
+    }
+    return initialState;
+  });
+
+  const updateFeedback = feedbackType => {
+    setFeedbacks({ ...feedbacks, [feedbackType]: feedbacks[feedbackType] + 1 });
+  };
+
+  const resetFeedback = () => {
+    setFeedbacks(initialState);
+  };
+
+  const totalFeedback = feedbacks.good + feedbacks.neutral + feedbacks.bad;
+
+  const positiveFeedback = Math.round((feedbacks.good / totalFeedback) * 100);
+
+  useEffect(() => {
+    localStorage.setItem('feedbackValue', JSON.stringify(feedbacks));
+  }, [feedbacks]);
+
   return (
-    <>
-      <Profile
-        name={userData.username}
-        tag={userData.tag}
-        location={userData.location}
-        image={userData.avatar}
-        stats={userData.stats}
+    <div>
+      <Description />
+      <Option
+        updateFeedback={updateFeedback}
+        totalFeedback={totalFeedback}
+        resetFeedback={resetFeedback}
       />
-      <FriendList friends={friends} />
-      <TransactionHistory items={transactions} />
-    </>
+      {totalFeedback ? (
+        <Feedback
+          feedbacks={feedbacks}
+          totalFeedback={totalFeedback}
+          positiveFeedback={positiveFeedback}
+        />
+      ) : (
+        <Notification />
+      )}
+    </div>
   );
 };
 
